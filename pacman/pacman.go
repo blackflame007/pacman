@@ -10,6 +10,10 @@ const (
 	Right
 )
 
+type Coordinates struct {
+	X, Y int
+}
+
 type Pacman struct {
 	X, Y int
 }
