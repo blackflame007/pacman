@@ -1,4 +1,3 @@
-// gamestate.go
 package gamestate
 
 import (
@@ -16,6 +15,8 @@ type gameState struct {
 	ghosts      []ghost.Ghost
 	score       int
 	powerPellet int
+	lives       int
+	spawn       pacman.Coordinates // New field to store spawn point coordinates
 }
 
 func NewGameState() *gameState {
@@ -42,6 +43,8 @@ func NewGameState() *gameState {
 		ghosts:      ghosts,
 		score:       0,
 		powerPellet: 0,
+		lives:       3,
+		spawn:       pacman.Coordinates{X: 13, Y: 23}, // Set spawn coordinates to initial Pacman position
 	}
 }
 
@@ -72,18 +75,73 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (g *gameState) movePacman(dx, dy int) {
 	newX := g.pacman.X + dx
 	newY := g.pacman.Y + dy
+
+	// Check if the new position is within the jail area
+	if newX >= 12 && newX <= 15 && newY >= 12 && newY <= 14 {
+		return
+	}
+
 	if g.board.Cells[newY][newX] != '#' {
 		switch g.board.Cells[newY][newX] {
 		case '.':
 			g.score++
+			g.board.Cells[newY][newX] = ' ' // Remove the dot from the board
 		case 'O':
 			g.score += 10
 			g.powerPellet++
+		case 'G':
+			g.lives--
+			if g.lives == 0 {
+				g.resetGame()
+				return
+			} else {
+				g.respawnPlayer()
+				return
+			}
 		}
 		g.board.Cells[g.pacman.Y][g.pacman.X] = ' '
 		g.pacman.X = newX
 		g.pacman.Y = newY
 		g.board.Cells[g.pacman.Y][g.pacman.X] = 'P'
+	}
+}
+
+func (g *gameState) respawnPlayer() {
+	g.board.Cells[g.pacman.Y][g.pacman.X] = ' '
+	g.pacman.X = g.spawn.X
+	g.pacman.Y = g.spawn.Y
+	g.board.Cells[g.pacman.Y][g.pacman.X] = 'P'
+}
+
+func (g *gameState) resetGame() {
+	g.score = 0
+	g.powerPellet = 0
+	g.lives = 3
+
+	// Reset Pacman's position
+	g.board.Cells[g.pacman.Y][g.pacman.X] = ' '
+	g.pacman.X = g.spawn.X
+	g.pacman.Y = g.spawn.Y
+	g.board.Cells[g.pacman.Y][g.pacman.X] = 'P'
+
+	// Reset Ghosts' positions
+	for i := range g.ghosts {
+		g.board.Cells[g.ghosts[i].Y][g.ghosts[i].X] = ' '
+		g.ghosts[i].X = 12 + i
+		g.ghosts[i].Y = 14
+		g.board.Cells[g.ghosts[i].Y][g.ghosts[i].X] = 'G'
+	}
+
+	g.resetDots() // Reset the dots on the board
+}
+
+func (g *gameState) resetDots() {
+	for i := range g.board.Cells {
+		for j := range g.board.Cells[i] {
+			if g.board.Cells[i][j] != '#' && !(i >= 11 && i <= 15 && j >= 12 && j <= 15) {
+				g.board.Cells[i][j] = '.'
+			}
+		}
 	}
 }
 
@@ -97,5 +155,6 @@ func (g gameState) View() string {
 	}
 	out += fmt.Sprintf("Score: %d\n", g.score)
 	out += fmt.Sprintf("Power Pellets: %d\n", g.powerPellet)
+	out += fmt.Sprintf("Lives: %d\n", g.lives)
 	return out
 }
