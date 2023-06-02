@@ -2,6 +2,7 @@ package ghost
 
 import (
 	"math/rand"
+	"pacman/board"
 	"time"
 )
 
@@ -15,8 +16,9 @@ const (
 )
 
 type Ghost struct {
-	X, Y      int
-	Direction Direction
+	X, Y         int
+	Direction    Direction
+	PreviousCell board.Cell // New field to store the previous cell value
 }
 
 func NewGhost(x, y int) Ghost {

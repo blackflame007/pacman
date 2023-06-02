@@ -1,3 +1,4 @@
+// gamestate.go
 package gamestate
 
 import (
@@ -23,7 +24,7 @@ func NewGameState() *gameState {
 	board := board.NewBoard()
 
 	// Add Pacman to the board
-	// board.Cells[13][23] = 'P'
+	board.Cells[23][13] = 'P'
 
 	// Add Ghosts to the board
 	ghosts := []ghost.Ghost{
@@ -69,6 +70,11 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	// Move the ghosts
+	for i := range g.ghosts {
+		g.moveGhost(&g.ghosts[i])
+	}
+
 	return g, nil
 }
 
@@ -103,6 +109,40 @@ func (g *gameState) movePacman(dx, dy int) {
 		g.pacman.X = newX
 		g.pacman.Y = newY
 		g.board.Cells[g.pacman.Y][g.pacman.X] = 'P'
+	}
+}
+
+func boardToRunes(cells [][]board.Cell) [][]rune {
+	runes := make([][]rune, len(cells))
+	for i := range cells {
+		runes[i] = make([]rune, len(cells[i]))
+		for j, cell := range cells[i] {
+			runes[i][j] = rune(cell)
+		}
+	}
+	return runes
+}
+
+func (g *gameState) moveGhost(ghost *ghost.Ghost) {
+	dx, dy := ghost.ChooseDirection(boardToRunes(g.board.Cells))
+
+	newX := ghost.X + dx
+	newY := ghost.Y + dy
+
+	if g.board.Cells[newY][newX] != '#' && g.board.Cells[newY][newX] != 'G' {
+		// Save the current cell value before moving the ghost
+		previousCell := g.board.Cells[ghost.Y][ghost.X]
+
+		// Move the ghost to the new position
+		g.board.Cells[ghost.Y][ghost.X] = ' '
+		ghost.X = newX
+		ghost.Y = newY
+		g.board.Cells[ghost.Y][ghost.X] = 'G'
+
+		// Restore the previous cell value
+		if previousCell == '.' {
+			g.board.Cells[ghost.Y][ghost.X] = previousCell
+		}
 	}
 }
 
