@@ -138,7 +138,7 @@ func (g *gameState) resetGame() {
 func (g *gameState) resetDots() {
 	for i := range g.board.Cells {
 		for j := range g.board.Cells[i] {
-			if g.board.Cells[i][j] != '#' && !(i >= 11 && i <= 15 && j >= 12 && j <= 15) {
+			if g.board.Cells[i][j] != '#' && !(i >= 11 && i <= 15 && j >= 11 && j <= 16) {
 				g.board.Cells[i][j] = '.'
 			}
 		}
