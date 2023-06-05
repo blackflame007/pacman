@@ -1,5 +1,12 @@
 package gamestate
 
+func (g *gameState) respawnPlayer() {
+	g.board.Cells[g.pacman.Y][g.pacman.X] = ' '
+	g.pacman.X = g.spawn.X
+	g.pacman.Y = g.spawn.Y
+	g.board.Cells[g.pacman.Y][g.pacman.X] = 'P'
+}
+
 func (g *gameState) movePacman(dx, dy int) {
 	newX := g.pacman.X + dx
 	newY := g.pacman.Y + dy

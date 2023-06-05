@@ -75,7 +75,27 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		g.moveGhost(&g.ghosts[i])
 	}
 
+	// Add Win condition here
+	// TODO: if all dots are collected bt the player they win the game
+	// Check if all dots are collected
+	if g.areAllDotsCollected() {
+		// Player wins the game
+		// Return line to the player saying they won
+		return g, tea.Quit
+	}
+
 	return g, nil
+}
+
+func (g *gameState) areAllDotsCollected() bool {
+	for i := range g.board.Cells {
+		for j := range g.board.Cells[i] {
+			if g.board.Cells[i][j] == '.' {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func boardToRunes(cells [][]board.Cell) [][]rune {
@@ -87,13 +107,6 @@ func boardToRunes(cells [][]board.Cell) [][]rune {
 		}
 	}
 	return runes
-}
-
-func (g *gameState) respawnPlayer() {
-	g.board.Cells[g.pacman.Y][g.pacman.X] = ' '
-	g.pacman.X = g.spawn.X
-	g.pacman.Y = g.spawn.Y
-	g.board.Cells[g.pacman.Y][g.pacman.X] = 'P'
 }
 
 func (g *gameState) resetGame() {
