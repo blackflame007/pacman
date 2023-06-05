@@ -10,10 +10,15 @@ func (g *gameState) movePacman(dx, dy int) {
 	}
 
 	// Wraparound Pacman's position when moving through tunnels
+	// Wraparound Pacman's position when moving through tunnels
 	if newY < 0 {
 		newY = len(g.board.Cells) - 1
 	} else if newY >= len(g.board.Cells) {
 		newY = 0
+	} else if newX < 0 {
+		newX = len(g.board.Cells[0]) - 1
+	} else if newX >= len(g.board.Cells[0]) {
+		newX = 0
 	}
 
 	if g.board.Cells[newY][newX] != '#' {
