@@ -78,40 +78,6 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return g, nil
 }
 
-func (g *gameState) movePacman(dx, dy int) {
-	newX := g.pacman.X + dx
-	newY := g.pacman.Y + dy
-
-	// Check if the new position is within the jail area
-	if newX >= 12 && newX <= 15 && newY >= 12 && newY <= 14 {
-		return
-	}
-
-	if g.board.Cells[newY][newX] != '#' {
-		switch g.board.Cells[newY][newX] {
-		case '.':
-			g.score++
-			g.board.Cells[newY][newX] = ' ' // Remove the dot from the board
-		case 'O':
-			g.score += 10
-			g.powerPellet++
-		case 'G':
-			g.lives--
-			if g.lives == 0 {
-				g.resetGame()
-				return
-			} else {
-				g.respawnPlayer()
-				return
-			}
-		}
-		g.board.Cells[g.pacman.Y][g.pacman.X] = ' '
-		g.pacman.X = newX
-		g.pacman.Y = newY
-		g.board.Cells[g.pacman.Y][g.pacman.X] = 'P'
-	}
-}
-
 func boardToRunes(cells [][]board.Cell) [][]rune {
 	runes := make([][]rune, len(cells))
 	for i := range cells {
@@ -121,29 +87,6 @@ func boardToRunes(cells [][]board.Cell) [][]rune {
 		}
 	}
 	return runes
-}
-
-func (g *gameState) moveGhost(ghost *ghost.Ghost) {
-	dx, dy := ghost.ChooseDirection(boardToRunes(g.board.Cells))
-
-	newX := ghost.X + dx
-	newY := ghost.Y + dy
-
-	if g.board.Cells[newY][newX] != '#' && g.board.Cells[newY][newX] != 'G' {
-		// Save the current cell value before moving the ghost
-		previousCell := g.board.Cells[ghost.Y][ghost.X]
-
-		// Move the ghost to the new position
-		g.board.Cells[ghost.Y][ghost.X] = ' '
-		ghost.X = newX
-		ghost.Y = newY
-		g.board.Cells[ghost.Y][ghost.X] = 'G'
-
-		// Restore the previous cell value
-		if previousCell == '.' {
-			g.board.Cells[ghost.Y][ghost.X] = previousCell
-		}
-	}
 }
 
 func (g *gameState) respawnPlayer() {
