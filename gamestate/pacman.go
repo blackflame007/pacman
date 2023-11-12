@@ -17,7 +17,6 @@ func (g *gameState) movePacman(dx, dy int) {
 	}
 
 	// Wraparound Pacman's position when moving through tunnels
-	// Wraparound Pacman's position when moving through tunnels
 	if newY < 0 {
 		newY = len(g.board.Cells) - 1
 	} else if newY >= len(g.board.Cells) {
@@ -36,14 +35,26 @@ func (g *gameState) movePacman(dx, dy int) {
 		case 'O':
 			g.score += 10
 			g.powerPellet++
+			// Activate frightened mode and reset ghosts
+			g.frightenedMode = true
+			g.frightenedTurns = 35 // Duration of frightened mode in turns
 		case 'G':
-			g.lives--
-			if g.lives == 0 {
-				g.resetGame()
-				return
+			if g.frightenedMode {
+				// Reset the ghost to spawn cage instead of losing a life
+				ghostIndex := g.findGhostAt(newX, newY)
+				g.ghosts[ghostIndex].X = g.ghostSpawnX
+				g.ghosts[ghostIndex].Y = g.ghostSpawnY
+				g.board.Cells[g.ghostSpawnY][g.ghostSpawnX] = 'G'
+				g.score += 25
 			} else {
-				g.respawnPlayer()
-				return
+				g.lives--
+				if g.lives == 0 {
+					g.resetGame()
+					return
+				} else {
+					g.respawnPlayer()
+					return
+				}
 			}
 		}
 		g.board.Cells[g.pacman.Y][g.pacman.X] = ' '
@@ -51,4 +62,14 @@ func (g *gameState) movePacman(dx, dy int) {
 		g.pacman.Y = newY
 		g.board.Cells[g.pacman.Y][g.pacman.X] = 'P'
 	}
+}
+
+// Helper function to find the index of a ghost at given coordinates
+func (g *gameState) findGhostAt(x, y int) int {
+	for i, ghost := range g.ghosts {
+		if ghost.X == x && ghost.Y == y {
+			return i
+		}
+	}
+	return -1 // Return an invalid index if no ghost is found
 }
