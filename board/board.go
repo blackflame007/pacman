@@ -18,17 +18,6 @@ func NewBoard() Board {
 	for i := range cells {
 		cells[i] = make([]Cell, Width)
 	}
-
-	// Add borders to the Board
-	for i := range cells[0] {
-		cells[0][i] = '-'
-		cells[len(cells)-1][i] = '-'
-	}
-	for i := range cells {
-		cells[i][0] = '|'
-		cells[i][len(cells[i])-1] = '|'
-	}
-
 	// Generate Maze
 	GenerateMaze(cells)
 

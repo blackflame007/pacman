@@ -2,10 +2,7 @@ module pacman
 
 go 1.20
 
-require (
-	github.com/charmbracelet/bubbletea v0.24.1
-	github.com/nsf/termbox-go v1.1.1
-)
+require github.com/charmbracelet/bubbletea v0.24.1
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect

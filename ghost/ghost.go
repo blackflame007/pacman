@@ -3,7 +3,6 @@ package ghost
 import (
 	"math/rand"
 	"pacman/board"
-	"time"
 )
 
 type Direction int
@@ -22,7 +21,6 @@ type Ghost struct {
 }
 
 func NewGhost(x, y int) Ghost {
-	rand.Seed(time.Now().UnixNano())
 	return Ghost{
 		X:         x,
 		Y:         y,
@@ -37,7 +35,6 @@ func (g *Ghost) Move(dx, dy int) {
 
 func (g Ghost) ChooseDirection(board [][]rune) (int, int) {
 	// Randomly choose a direction for now. Later this can be replaced with more sophisticated AI logic.
-	rand.Seed(time.Now().UnixNano())
 	direction := Direction(rand.Intn(4))
 
 	switch direction {
