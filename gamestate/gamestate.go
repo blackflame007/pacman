@@ -11,13 +11,16 @@ import (
 )
 
 type gameState struct {
-	board       board.Board
-	pacman      pacman.Pacman
-	ghosts      []ghost.Ghost
-	score       int
-	powerPellet int
-	lives       int
-	spawn       pacman.Coordinates // New field to store spawn point coordinates
+	board                    board.Board
+	pacman                   pacman.Pacman
+	ghosts                   []ghost.Ghost
+	score                    int
+	powerPellet              int
+	lives                    int
+	spawn                    pacman.Coordinates // New field to store spawn point coordinates
+	frightenedMode           bool               // Indicates if ghosts are in frightened mode
+	frightenedTurns          int                // Number of turns left in frightened mode
+	ghostSpawnX, ghostSpawnY int                // Coordinates of the ghost spawn cage
 }
 
 func NewGameState() *gameState {
@@ -39,13 +42,17 @@ func NewGameState() *gameState {
 	}
 
 	return &gameState{
-		board:       board,
-		pacman:      pacman.Pacman{X: 13, Y: 23},
-		ghosts:      ghosts,
-		score:       0,
-		powerPellet: 0,
-		lives:       3,
-		spawn:       pacman.Coordinates{X: 13, Y: 23}, // Set spawn coordinates to initial Pacman position
+		board:           board,
+		pacman:          pacman.Pacman{X: 13, Y: 23},
+		ghosts:          ghosts,
+		score:           0,
+		powerPellet:     0,
+		lives:           3,
+		spawn:           pacman.Coordinates{X: 13, Y: 23}, // Set spawn coordinates to initial Pacman position
+		frightenedMode:  false,
+		frightenedTurns: 0,
+		ghostSpawnX:     14, // Example coordinates for the ghost spawn cage
+		ghostSpawnY:     12,
 	}
 }
 
@@ -82,6 +89,14 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Player wins the game
 		// Return line to the player saying they won
 		return g, tea.Quit
+	}
+
+	// Handle frightened mode turn countdown
+	if g.frightenedMode {
+		g.frightenedTurns--
+		if g.frightenedTurns <= 0 {
+			g.frightenedMode = false
+		}
 	}
 
 	return g, nil
@@ -150,7 +165,7 @@ func (g gameState) View() string {
 		out += "\n"
 	}
 	out += fmt.Sprintf("Score: %d\n", g.score)
-	out += fmt.Sprintf("Power Pellets: %d\n", g.powerPellet)
+	out += fmt.Sprintf("Power Pellets Timer: %d\n", g.frightenedTurns)
 	out += fmt.Sprintf("Lives: %d\n", g.lives)
 	return out
 }
